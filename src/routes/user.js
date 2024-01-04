@@ -8,23 +8,13 @@ const multer = require('multer');
 const { storage } = require('../cloudanary/config');
 const upload = multer({ storage });
 
-
 router.use(express.json());
 router.use(cookieParser(process.env.JWT_SECRET));
 
+// Route for user signup
 router.post('/signup', upload.single('image'), async (req, res) => {
     try {
-        const { name, phoneNo, email, profilePic, password } = req.body;
-
-        const image = {
-            url: req.file,
-            filename: req.filename
-        }
-
-        console.log(image);
-        console.log('profilePic ;-> ', profilePic);
-
-
+        const { name, phoneNo, email, password } = req.body;
 
         if (!name || !email || !phoneNo || !password) {
             return res.status(401).send("Please fill correctly");
@@ -35,10 +25,24 @@ router.post('/signup', upload.single('image'), async (req, res) => {
             return res.status(400).send('You are already registered');
         }
 
-
-
         const hashPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ name, phoneNo, email, profilePic: { url: req.file, filename: req.filename }, password: hashPassword, });
+
+        // Check if file information is available
+        if (!req.file || !req.file.url || !req.file.filename) {
+            return res.status(400).send("File information not available");
+        }
+
+        const newUser = new User({
+            name,
+            phoneNo,
+            email,
+            profilePic: {
+                url: req.file.url,
+                filename: req.file.filename
+            },
+            password: hashPassword,
+        });
+
         await newUser.save();
 
         const token = jwt.sign({ email: newUser.email, id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
@@ -56,6 +60,7 @@ router.post('/signup', upload.single('image'), async (req, res) => {
     }
 });
 
+// Route for user login
 router.post('/login', async (req, res) => {
     try {
         const { email, password, phoneNo } = req.body;
@@ -98,21 +103,20 @@ router.post('/login', async (req, res) => {
     }
 });
 
-
+// Route to get all users
 router.get('/allUser', async (req, res) => {
     try {
         const allUser = await User.find();
         return res.status(200).send({ message: 'ok', user: allUser });
     } catch (error) {
-        return res.status(400).send('Somthing went wrong');
+        return res.status(400).send('Something went wrong');
     }
 });
 
-
+// Route to edit user details
 router.patch('/edit/:userId', upload.single('image'), async (req, res) => {
     try {
         const { userId } = req.params;
-        console.log(userId);
         const existingUser = await User.findById(userId);
 
         if (!existingUser) {
@@ -123,13 +127,13 @@ router.patch('/edit/:userId', upload.single('image'), async (req, res) => {
         existingUser.name = name;
         existingUser.profilePic = profilePic;
         await existingUser.save();
-        return res.status(200).send('User successfuly updated');
+        return res.status(200).send('User successfully updated');
     } catch (error) {
-        return res.status(401).send('Somthing went wrong');
+        return res.status(401).send('Something went wrong');
     }
 });
 
-
+// Route to get user details by ID
 router.get('/userDetails/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -142,10 +146,9 @@ router.get('/userDetails/:userId', async (req, res) => {
     } catch (error) {
         return res.status(500).send('Server error');
     }
-})
+});
 
-
-
+// Route to delete user by ID
 router.delete('/delete/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -154,9 +157,10 @@ router.delete('/delete/:userId', async (req, res) => {
             return res.status(401).send('User not exists');
         }
         await existingUser.deleteOne();
-        return res.status(200).send('user deleted');
+        return res.status(200).send('User deleted');
     } catch (error) {
         return res.status(500).send('Server error');
     }
-})
+});
+
 module.exports = router;

@@ -15,8 +15,7 @@
     <div class="container row-3 col-4 mt-4">
       <h2>Sign-Up</h2>
 
-      <form action="/user/signup" method="post">
-
+      <form action="/user/signup" method="post" enctype="multipart/form-data">
         <!-- Name Input -->
         <div class="form-outline mb-4">
           <label class="form-label" for="name">Enter Full Name</label>
@@ -71,14 +70,17 @@
           <input
             type="file"
             id="profilePic"
-            name="profilePic"
+            name="image"
             class="form-control"
-        
           />
         </div>
 
         <!-- Submit button -->
-        <button type="submit" class="btn btn-primary btn-block mb-4">
+        <button
+          type="submit"
+          class="btn btn-primary btn-block mb-4"
+          value="submit"
+        >
           Sign-Up
         </button>
 
