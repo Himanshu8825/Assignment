@@ -26,9 +26,8 @@ router.post('/signup', upload.single('image'), async (req, res) => {
         }
 
         const hashPassword = await bcrypt.hash(password, 10);
-
         // Check if file information is available
-        if (!req.file || !req.file.url || !req.file.filename) {
+        if (!req.file || !req.file.path || !req.file.filename) {
             return res.status(400).send("File information not available");
         }
 
@@ -37,12 +36,13 @@ router.post('/signup', upload.single('image'), async (req, res) => {
             phoneNo,
             email,
             profilePic: {
-                url: req.file.url,
+                url: req.file.path,  // Use req.file.path instead of req.file.url
                 filename: req.file.filename
             },
             password: hashPassword,
         });
 
+        console.log(newUser.profilePic);
         await newUser.save();
 
         const token = jwt.sign({ email: newUser.email, id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1d' });

@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
+
+
+
 // Import routes
 const userRoute = require('./src/routes/user');
 const fileUpload = require('express-fileupload');
@@ -14,9 +17,9 @@ const app = express();
 // Middleware for parsing form data
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
-app.use(fileUpload({
-    useTempFiles: true
-}))
+// app.use(fileUpload({
+//     useTempFiles: true
+// }))
 
 // Define port and MongoDB URI
 const port = process.env.PORT || 3000;
